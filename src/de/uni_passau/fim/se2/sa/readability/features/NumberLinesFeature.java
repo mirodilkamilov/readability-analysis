@@ -10,7 +10,15 @@ public class NumberLinesFeature extends FeatureMetric {
      */
     @Override
     public double computeMetric(String codeSnippet) {
-        throw new UnsupportedOperationException("Implement me");
+        if (codeSnippet == null || codeSnippet.isBlank()) {
+            return 0.0;
+        }
+
+        if (codeSnippet.endsWith("\n") || codeSnippet.endsWith("\r")) {
+            codeSnippet = codeSnippet.replaceFirst("\\R\\z", "");
+        }
+
+        return codeSnippet.split("\\R", -1).length;
     }
 
     @Override

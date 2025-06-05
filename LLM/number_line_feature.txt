@@ -1,0 +1,195 @@
+Q: My implementation of number  line counter is not counting the ending line break. Here in my test, for example, the expected lines should 6 but giving 5. Why?
+
+   public double computeMetric(String codeSnippet) {
+           if (codeSnippet == null || codeSnippet.isBlank()) {
+               return 0.0;
+           }
+
+           long numberOfLines = Arrays.stream(codeSnippet.split("\\R")).count();
+           return (double) numberOfLines;
+       }
+   @Test
+       public void testComputeMetric_HelloWorld() {
+           String helloWorld = """
+                   public class HelloWorld {
+                       public static void main(String[] args) {
+                           System.out.println("Hello, World!");
+                       }
+                   }
+
+                   """;
+           assertEquals(6.0, linesFeature.computeMetric(helloWorld));
+       }
+
+A: The issue lies in how `String.split("\\R")` works. In Java, when you use `String.split(...)`, trailing empty strings **after the last delimiter** are **discarded by default**. So if your input ends with a line break, the final (empty) line is not included in the resulting array.
+
+   ### Your test input:
+
+   ```java
+   String helloWorld = """
+       public class HelloWorld {
+           public static void main(String[] args) {
+               System.out.println("Hello, World!");
+           }
+       }
+
+       """;
+   ```
+
+   This contains **6 lines**:
+
+   1. `public class HelloWorld {`
+   2. `    public static void main(String[] args) {`
+   3. `        System.out.println("Hello, World!");`
+   4. `    }`
+   5. `}`
+   6. *An empty line (because of the trailing newline)*
+
+   ### But this line:
+
+   ```java
+   Arrays.stream(codeSnippet.split("\\R")).count();
+   ```
+
+   Counts only **5 lines**, because the `.split("\\R")` drops the empty string after the last line break.
+
+   ---
+
+   ### ✅ Solution: Use `split("\\R", -1)`
+
+   The second argument (`limit`) of `String.split(...)` controls how trailing empty strings are handled:
+
+   * Use `-1` to **preserve trailing empty strings**.
+
+   #### Updated code:
+
+   ```java
+   long numberOfLines = Arrays.stream(codeSnippet.split("\\R", -1)).count();
+   ```
+
+   This will now correctly count the last empty line.
+
+   ---
+
+   ### Full Fix:
+
+   ```java
+   public double computeMetric(String codeSnippet) {
+       if (codeSnippet == null || codeSnippet.isBlank()) {
+           return 0.0;
+       }
+
+       long numberOfLines = Arrays.stream(codeSnippet.split("\\R", -1)).count();
+       return (double) numberOfLines;
+   }
+   ```
+
+   Let me know if you also want to ignore leading/trailing empty lines or count only non-blank lines.
+
+
+Q: It worked but now I'm getting one extra split, why? This returns 7 not 6
+   @Test
+       public void testComputeMetric_HelloWorldWithTrailingEmptyString() {
+           String helloWorld = """
+                   public class HelloWorld {
+                       public static void main(String[] args) {
+                           System.out.println("Hello, World!");
+                       }
+                   }
+
+                   """;
+           assertEquals(6.0, linesFeature.computeMetric(helloWorld));
+
+A: Great question — this behavior is due to **how Java handles multiline string literals (`"""`) and trailing newlines**.
+
+   Let's break it down:
+
+   ---
+
+   ### 🔍 What's actually in your string?
+
+   The Java multiline string:
+
+   ```java
+   String helloWorld = """
+       public class HelloWorld {
+           public static void main(String[] args) {
+               System.out.println("Hello, World!");
+           }
+       }
+
+       """;
+   ```
+
+   Contains:
+
+   1. 5 lines of code
+   2. 1 blank line
+   3. **1 additional implicit newline at the end**, automatically added by the triple-quoted string syntax (unless you end the `"""` on the same line)
+
+   ---
+
+   ### ✅ Total: 7 lines:
+
+   1. `public class HelloWorld {`
+   2. `    public static void main(String[] args) {`
+   3. `        System.out.println("Hello, World!");`
+   4. `    }`
+   5. `}`
+   6. *Empty line you added*
+   7. *Extra newline from the end of the multiline string*
+
+   ---
+
+   ### 🛠 Solution Options
+
+   #### ✅ Option 1: Strip the trailing newline if present
+
+   If you want to count **only visible lines**, ignoring trailing line breaks:
+
+   ```java
+   public double computeMetric(String codeSnippet) {
+       if (codeSnippet == null || codeSnippet.isBlank()) {
+           return 0.0;
+       }
+
+       // Strip a single trailing line break to avoid counting phantom last line
+       if (codeSnippet.endsWith("\n") || codeSnippet.endsWith("\r")) {
+           codeSnippet = codeSnippet.replaceFirst("\\R\\z", "");
+       }
+
+       long numberOfLines = Arrays.stream(codeSnippet.split("\\R", -1)).count();
+       return (double) numberOfLines;
+   }
+   ```
+
+   This will count **only the lines you explicitly write**, not the automatic one.
+
+   ---
+
+   #### ✅ Option 2: Remove all trailing empty lines
+
+   If you want to remove **any number** of blank lines at the end:
+
+   ```java
+   String[] lines = codeSnippet.split("\\R", -1);
+   int lineCount = lines.length;
+
+   while (lineCount > 0 && lines[lineCount - 1].isBlank()) {
+       lineCount--;
+   }
+   return (double) lineCount;
+   ```
+
+   ---
+
+   ### 🧪 Verify with `.codePoints().forEach(System.out::println);` if needed
+
+   Let me know how you'd like to count lines:
+
+   * Include **every** newline?
+   * Only **non-blank** lines?
+   * Trim **blank lines** at the end?
+
+   Each case needs a slightly different approach.
+
