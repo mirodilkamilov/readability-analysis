@@ -131,4 +131,8 @@ public class NumberLinesFeatureTest {
         assertEquals(37.0, linesFeature.computeMetric(helloWorld));
     }
 
+    @Test
+    public void testGetIdentifier_ReturnsExactMatch() {
+        assertEquals("NumberLines", linesFeature.getIdentifier());
+    }
 }
