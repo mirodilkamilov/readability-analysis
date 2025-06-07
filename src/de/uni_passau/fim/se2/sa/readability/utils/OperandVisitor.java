@@ -1,7 +1,7 @@
 package de.uni_passau.fim.se2.sa.readability.utils;
 
-import com.github.javaparser.ast.Node;
 import com.github.javaparser.ast.body.MethodDeclaration;
+import com.github.javaparser.ast.body.Parameter;
 import com.github.javaparser.ast.body.VariableDeclarator;
 import com.github.javaparser.ast.expr.*;
 import com.github.javaparser.ast.type.ClassOrInterfaceType;
@@ -110,18 +110,22 @@ public class OperandVisitor extends VoidVisitorAdapter<Void> {
     }
 
     @Override
+    public void visit(final Parameter n, final Void arg) {
+        addOperand(n.getNameAsString());
+        super.visit(n, arg);
+    }
+
+    @Override
     public void visit(final NameExpr n, final Void arg) {
         if (!n.hasParentNode() || n.getParentNode().isEmpty()) {
             super.visit(n, arg);
             return;
         }
 
-        Node parentNode = n.getParentNode().get();
-        if (!(parentNode instanceof ArrayAccessExpr)) {
-            String nodeName = n.getNameAsString();
-            nodeName = nodeName.equalsIgnoreCase("null") ? "null" : nodeName;
-            addOperand(nodeName);
-        }
+        String nodeName = n.getNameAsString();
+        nodeName = nodeName.equalsIgnoreCase("null") ? "null" : nodeName;
+        addOperand(nodeName);
+
         super.visit(n, arg);
     }
 
