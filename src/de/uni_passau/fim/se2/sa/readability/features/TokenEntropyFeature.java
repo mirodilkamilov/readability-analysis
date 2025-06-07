@@ -9,12 +9,9 @@ import java.util.Iterator;
 import java.util.Map;
 import java.util.NoSuchElementException;
 
+import static de.uni_passau.fim.se2.sa.readability.utils.Math.tokenEntropy;
+
 public class TokenEntropyFeature extends FeatureMetric {
-
-    public static double log2(double x) {
-        return Math.log(x) / Math.log(2);
-    }
-
     /**
      * Computes the entropy metric based on the tokens of the given code snippet.
      * Since we are interested in the readability of code as perceived by a human, tokens also include whitespaces and the like.
@@ -56,13 +53,7 @@ public class TokenEntropyFeature extends FeatureMetric {
             totalNumOfTokens++;
         }
 
-        double tokenEntropy = 0.0;
-        for (Map.Entry<String, Integer> token : tokenDictionary.entrySet()) {
-            double probOfEncounteringToken = (double) token.getValue() / totalNumOfTokens;
-            tokenEntropy -= probOfEncounteringToken * log2(probOfEncounteringToken);
-        }
-
-        return tokenEntropy;
+        return tokenEntropy(tokenDictionary, totalNumOfTokens);
     }
 
     @Override
