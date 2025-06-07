@@ -1,0 +1,280 @@
+Q: I have this task to implement. I don't understand one part here. How come these two can be counted as same operand: boolean a = true and String b = "true" ?
+
+   The feature H_VOLUME computes the Halstead Volume of the given Java method. To this end, we first have to count the total number of operators N1 and operands N2 as well as the unique number of operators n1 and operands n2 in the provided code snippet. Next, we can then derive the program length N = N1 + N2 and the program vocabulary n = n1 + n2 by summarising the total and unique number of operators and operands, respectively. Based on the program length and the program vocabulary, we can then compute the Halstead Volume V(s) of a given code snippet using the formula V (s) = N ∗ log2 (n). In order to determine the total and unique number of operators and operands, you have to use the VoidVisitorAdapter of the JavaParser library to implement the OperatorVisitor and OperandVisitor classes. This adapter comes with numerous visitors, which you'll have to use in order to visit the parts of the code that constitute as operators and operands. Generally, operators correspond to special symbols that perform specific actions on operands. For instance, the statement x = y + z consists of a binary addition operation (+) and an assignment operation (=), which involve the operands x, y and z. We restrict the set of operators according to the given OperatorType enum, which includes assignment, binary, unary, conditional and type comparison operations. Besides traditional assignment operators (=), we also count variable
+   declarations as operations that assign a type to a variable. The set of operands is restricted to literals (boolean, char, integer, double, long, string, null) and names consisting of a single identifier. We do not distinguish between a String having a value of NULL and the null literal. Furthermore, we do not distinguish the type of the operand, e.g. boolean a = true and String b = "true" are both counted as the same operand.
+
+A: Great question — the part you're asking about is a bit subtle and has to do with how **Halstead Volume** treats *operands* in a normalized and simplified way.
+
+   ---
+
+   ### 🔍 Why are `true` (boolean) and `"true"` (String) counted as the **same operand**?
+
+   **Short answer**: Because the task **intentionally ignores the type of literals** when counting operands. That is, `"true"` (a `String`) and `true` (a `boolean`) are both **literals with the same textual representation**, and **the task treats operand equality by their string value, not type**.
+
+   ---
+
+   ### 📘 Let's break it down
+
+   #### The two lines in question:
+
+   ```java
+   boolean a = true;       // boolean literal: true
+   String b = "true";      // string literal: "true"
+   ```
+
+   Under normal Java semantics:
+
+   * `true` is a boolean literal
+   * `"true"` is a String literal
+
+   However, per the task description:
+
+   > *We do not distinguish the type of the operand, e.g. boolean a = true and String b = "true" are both counted as the same operand.*
+
+   This means:
+
+   * The string value `"true"` (in quotes) and the bare keyword `true` (boolean literal) are **both reduced to a single entry** when computing the set of unique operands.
+
+   So:
+
+   * Even though they are **different types** in Java (one is `boolean`, one is `String`),
+   * They are considered the **same operand** by **string representation only** for this Halstead metric.
+
+   ---
+
+   ### 🧠 Why do this?
+
+   This simplification is likely for **consistency and ease of measurement**:
+
+   * Halstead metrics are about measuring code *complexity*, not type correctness.
+   * The aim is to measure how many **conceptually distinct things** the developer had to think about.
+   * If a variable named `status` is used with `true` and later with `"true"`, the cognitive load might not be significantly different.
+
+   ---
+
+   ### 🛠️ Practical Implementation Tip
+
+   When you use `VoidVisitorAdapter` to collect operands, treat literal values as **strings**, and **normalize** them:
+
+   ```java
+   // pseudocode-ish example
+   if (node instanceof LiteralExpr) {
+       String operand = node.toString();  // use textual representation
+       uniqueOperands.add(operand);       // e.g. both "true" and true become "true"
+   }
+   ```
+
+   To enforce that `"true"` and `true` are equal, you might need to remove quotation marks:
+
+   ```java
+   String normalized = operand.replaceAll("^\"|\"$", ""); // strip surrounding quotes
+   ```
+
+   ---
+
+   ### ✅ Summary
+
+   | Literal  | Java Type | String Representation | Counted As |
+   | -------- | --------- | --------------------- | ---------- |
+   | `true`   | boolean   | `"true"`              | `"true"`   |
+   | `"true"` | String    | `"true"`              | `"true"`   |
+
+   > Treat all operands as string representations and count unique values based on the text, not type.
+
+   Let me know if you want help implementing this in the visitor class!
+
+
+Q: Can you explain what is functionality of VoidVisitorAdapter? I don't understand anything. Also how is it related to my problem?
+
+   /**
+    * A visitor that returns nothing, and has a default implementation for all its visit
+    * methods that simply visit their children in an unspecified order.
+    *
+    * @author Julio Vilmar Gesser
+    */
+   public abstract class VoidVisitorAdapter<A> implements VoidVisitor<A> {
+
+       @Override
+       public void visit(final AnnotationDeclaration n, final A arg) {
+           n.getMembers().forEach(p -> p.accept(this, arg));
+           n.getModifiers().forEach(p -> p.accept(this, arg));
+           n.getName().accept(this, arg);
+           n.getAnnotations().forEach(p -> p.accept(this, arg));
+           n.getComment().ifPresent(l -> l.accept(this, arg));
+       }
+
+       @Override
+       public void visit(final AnnotationMemberDeclaration n, final A arg) {
+           n.getDefaultValue().ifPresent(l -> l.accept(this, arg));
+           n.getModifiers().forEach(p -> p.accept(this, arg));
+           n.getName().accept(this, arg);
+           n.getType().accept(this, arg);
+           n.getAnnotations().forEach(p -> p.accept(this, arg));
+           n.getComment().ifPresent(l -> l.accept(this, arg));
+       }
+
+       @Override
+       public void visit(final ArrayAccessExpr n, final A arg) {
+           n.getIndex().accept(this, arg);
+           n.getName().accept(this, arg);
+           n.getComment().ifPresent(l -> l.accept(this, arg));
+       }
+
+
+   Also my OperatorVisitor should look like this:
+   public class OperatorVisitor extends VoidVisitorAdapter<Void> {
+
+       public enum OperatorType {
+           ASSIGNMENT,         // x=y
+           BINARY,             // x+y
+           UNARY,              // -x, ++x
+           CONDITIONAL,        // ?
+           TYPE_COMPARISON,    // instanceof
+       }
+
+       /**
+        * Maps operator types to the number of their occurrences in the given code snippet.
+        */
+       private final Map<OperatorType, Integer> operatorsPerMethod;
+
+       public OperatorVisitor() {
+           operatorsPerMethod = new HashMap<>();
+       }
+
+       public Map<OperatorType, Integer> getOperatorsPerMethod() {
+           return operatorsPerMethod;
+       }
+
+A: You're on the right track, and I’m happy to help you understand this.
+
+   Let’s break it down from the beginning.
+
+   ---
+
+   ## 🧠 What is `VoidVisitorAdapter`?
+
+   `VoidVisitorAdapter` is part of the **JavaParser** library — a tool for analyzing and modifying Java code programmatically. It works on an **AST** (Abstract Syntax Tree) — a tree structure representing the source code.
+
+   ### 📦 In Simple Terms
+
+   It lets you **walk through Java code as a tree** and do something when you encounter specific kinds of syntax, like:
+
+   * variable declarations
+   * method calls
+   * assignment statements
+   * operators
+   * literals
+
+   > `VoidVisitorAdapter` gives you a way to **"visit" each part of a Java file** and perform custom logic there — like counting operators or operands.
+
+   ---
+
+   ## 📌 Why `VoidVisitorAdapter<Void>`?
+
+   The generic type `<Void>` here means that your visitor doesn’t return anything. It just **modifies some internal state** (like adding to a counter or map) while visiting.
+
+   Example of using it:
+
+   ```java
+   OperatorVisitor visitor = new OperatorVisitor();
+   methodDeclaration.accept(visitor, null);  // start visiting the method
+   ```
+
+   ---
+
+   ## 🧱 How Is It Related to Your Problem?
+
+   You are asked to compute **Halstead Volume**, which requires counting:
+
+   * how many **operators** there are
+   * how many **operands** there are
+
+   To do that, you need to walk through the code and **identify operators and operands**.
+
+   That’s exactly what `VoidVisitorAdapter` is for:
+
+   * You create one visitor for operators (`OperatorVisitor`)
+   * Another for operands (`OperandVisitor`)
+   * Each one overrides specific visit methods like `visit(BinaryExpr n, Void arg)` or `visit(AssignExpr n, Void arg)`
+
+   ---
+
+   ## 🛠️ How to Use It: `OperatorVisitor` Example
+
+   You already started this:
+
+   ```java
+   public class OperatorVisitor extends VoidVisitorAdapter<Void> {
+       ...
+   }
+   ```
+
+   Now you need to override visit methods for different expressions.
+
+   ### Example: Count `=` assignments
+
+   ```java
+   @Override
+   public void visit(AssignExpr n, Void arg) {
+       operatorsPerMethod.merge(OperatorType.ASSIGNMENT, 1, Integer::sum);
+       super.visit(n, arg);  // continue visiting sub-nodes
+   }
+   ```
+
+   ### Example: Count `+`, `-`, etc.
+
+   ```java
+   @Override
+   public void visit(BinaryExpr n, Void arg) {
+       operatorsPerMethod.merge(OperatorType.BINARY, 1, Integer::sum);
+       super.visit(n, arg);
+   }
+   ```
+
+   ### Example: Count `++`, `!`, `-x`, etc.
+
+   ```java
+   @Override
+   public void visit(UnaryExpr n, Void arg) {
+       operatorsPerMethod.merge(OperatorType.UNARY, 1, Integer::sum);
+       super.visit(n, arg);
+   }
+   ```
+
+   ### Example: Count ternary `? :`
+
+   ```java
+   @Override
+   public void visit(ConditionalExpr n, Void arg) {
+       operatorsPerMethod.merge(OperatorType.CONDITIONAL, 1, Integer::sum);
+       super.visit(n, arg);
+   }
+   ```
+
+   ### Example: Count `instanceof`
+
+   ```java
+   @Override
+   public void visit(InstanceOfExpr n, Void arg) {
+       operatorsPerMethod.merge(OperatorType.TYPE_COMPARISON, 1, Integer::sum);
+       super.visit(n, arg);
+   }
+   ```
+
+   ---
+
+   ## ✅ Summary
+
+   | Concept                | Your Use Case                                |
+   | ---------------------- | -------------------------------------------- |
+   | `VoidVisitorAdapter`   | Tool for visiting parts of the code (AST)    |
+   | `visit(...)` methods   | Override them to inspect or count things     |
+   | `accept(visitor, arg)` | Starts the visiting process                  |
+   | `OperatorVisitor`      | Counts how many operators appear in a method |
+   | `OperandVisitor`       | Will count literals and identifiers used     |
+
+   ---
+
+   Would you like me to help you implement the `OperandVisitor` as well? Or build a full working example?
+
+
