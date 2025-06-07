@@ -43,13 +43,13 @@ public class OperatorVisitor extends VoidVisitorAdapter<Void> {
 
     @Override
     public void visit(final FieldDeclaration n, final Void arg) {
-        operatorsPerMethod.merge(OperatorType.ASSIGNMENT, 1, Integer::sum);
+        addOperator(OperatorType.ASSIGNMENT);
         super.visit(n, arg);
     }
 
     @Override
     public void visit(final VariableDeclarationExpr n, final Void arg) {
-        operatorsPerMethod.merge(OperatorType.ASSIGNMENT, 1, Integer::sum);
+        addOperator(OperatorType.ASSIGNMENT);
         super.visit(n, arg);
     }
 
@@ -58,31 +58,35 @@ public class OperatorVisitor extends VoidVisitorAdapter<Void> {
 
     @Override
     public void visit(final AssignExpr n, final Void arg) {
-        operatorsPerMethod.merge(OperatorType.ASSIGNMENT, 1, Integer::sum);
+        addOperator(OperatorType.ASSIGNMENT);
         super.visit(n, arg);
     }
 
     @Override
     public void visit(final BinaryExpr n, final Void arg) {
-        operatorsPerMethod.merge(OperatorType.BINARY, 1, Integer::sum);
+        addOperator(OperatorType.BINARY);
         super.visit(n, arg);
     }
 
     @Override
     public void visit(final UnaryExpr n, final Void arg) {
-        operatorsPerMethod.merge(OperatorType.UNARY, 1, Integer::sum);
+        addOperator(OperatorType.UNARY);
         super.visit(n, arg);
     }
 
     @Override
     public void visit(final ConditionalExpr n, final Void arg) {
-        operatorsPerMethod.merge(OperatorType.CONDITIONAL, 1, Integer::sum);
+        addOperator(OperatorType.CONDITIONAL);
         super.visit(n, arg);
     }
 
     @Override
     public void visit(final InstanceOfExpr n, final Void arg) {
-        operatorsPerMethod.merge(OperatorType.TYPE_COMPARISON, 1, Integer::sum);
+        addOperator(OperatorType.TYPE_COMPARISON);
         super.visit(n, arg);
+    }
+
+    private void addOperator(OperatorType operatorType) {
+        operatorsPerMethod.merge(operatorType, 1, Integer::sum);
     }
 }

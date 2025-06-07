@@ -1,8 +1,10 @@
 package de.uni_passau.fim.se2.sa.readability.utils;
 
 import com.github.javaparser.ast.Node;
+import com.github.javaparser.ast.body.MethodDeclaration;
 import com.github.javaparser.ast.body.VariableDeclarator;
 import com.github.javaparser.ast.expr.*;
+import com.github.javaparser.ast.type.ClassOrInterfaceType;
 import com.github.javaparser.ast.visitor.VoidVisitorAdapter;
 
 import java.util.HashMap;
@@ -36,50 +38,74 @@ public class OperandVisitor extends VoidVisitorAdapter<Void> {
 
     @Override
     public void visit(final BooleanLiteralExpr n, final Void arg) {
-        operandsPerMethod.merge(String.valueOf(n.getValue()), 1, Integer::sum);
+        addOperand(String.valueOf(n.getValue()));
         super.visit(n, arg);
     }
 
     @Override
     public void visit(final CharLiteralExpr n, final Void arg) {
-        operandsPerMethod.merge(n.getValue(), 1, Integer::sum);
+        addOperand(n.getValue());
         super.visit(n, arg);
     }
 
     @Override
     public void visit(final IntegerLiteralExpr n, final Void arg) {
-        operandsPerMethod.merge(n.getValue(), 1, Integer::sum);
+        addOperand(n.getValue());
         super.visit(n, arg);
     }
 
     @Override
     public void visit(final DoubleLiteralExpr n, final Void arg) {
-        operandsPerMethod.merge(n.getValue(), 1, Integer::sum);
+        addOperand(n.getValue());
         super.visit(n, arg);
     }
 
     @Override
     public void visit(final LongLiteralExpr n, final Void arg) {
-        operandsPerMethod.merge(n.getValue(), 1, Integer::sum);
+        addOperand(n.getValue());
         super.visit(n, arg);
     }
 
     @Override
     public void visit(final StringLiteralExpr n, final Void arg) {
-        operandsPerMethod.merge(n.getValue(), 1, Integer::sum);
+        addOperand(n.getValue());
         super.visit(n, arg);
     }
 
     @Override
     public void visit(final NullLiteralExpr n, final Void arg) {
-        operandsPerMethod.merge("null", 1, Integer::sum);
+        addOperand("null");
+        super.visit(n, arg);
+    }
+
+    @Override
+    public void visit(final MethodDeclaration n, final Void arg) {
+        addOperand(n.getNameAsString());
         super.visit(n, arg);
     }
 
     // Counting single identifiers
     @Override
     public void visit(final VariableDeclarator n, final Void arg) {
-        operandsPerMethod.merge(n.getNameAsString(), 1, Integer::sum);
+        addOperand(n.getNameAsString());
+        super.visit(n, arg);
+    }
+
+    @Override
+    public void visit(final MethodCallExpr n, final Void arg) {
+        addOperand(n.getNameAsString());
+        super.visit(n, arg);
+    }
+
+    @Override
+    public void visit(final ClassOrInterfaceType n, final Void arg) {
+        addOperand(n.getNameAsString());
+        super.visit(n, arg);
+    }
+
+    @Override
+    public void visit(final FieldAccessExpr n, final Void arg) {
+        addOperand(n.getNameAsString());
         super.visit(n, arg);
     }
 
@@ -91,13 +117,15 @@ public class OperandVisitor extends VoidVisitorAdapter<Void> {
         }
 
         Node parentNode = n.getParentNode().get();
-        if (!(parentNode instanceof FieldAccessExpr ||
-                parentNode instanceof MethodCallExpr ||
-                parentNode instanceof ArrayAccessExpr)) {
+        if (!(parentNode instanceof ArrayAccessExpr)) {
             String nodeName = n.getNameAsString();
             nodeName = nodeName.equalsIgnoreCase("null") ? "null" : nodeName;
-            operandsPerMethod.merge(nodeName, 1, Integer::sum);
+            addOperand(nodeName);
         }
         super.visit(n, arg);
+    }
+
+    private void addOperand(String operandName) {
+        operandsPerMethod.merge(operandName, 1, Integer::sum);
     }
 }
