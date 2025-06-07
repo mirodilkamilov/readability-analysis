@@ -1,6 +1,11 @@
 package de.uni_passau.fim.se2.sa.readability.features;
 
 
+import com.github.javaparser.ParseException;
+import com.github.javaparser.ast.body.BodyDeclaration;
+import de.uni_passau.fim.se2.sa.readability.utils.CyclomaticComplexityVisitor;
+import de.uni_passau.fim.se2.sa.readability.utils.Parser;
+
 public class CyclomaticComplexityFeature extends FeatureMetric {
 
     /**
@@ -10,8 +15,17 @@ public class CyclomaticComplexityFeature extends FeatureMetric {
      */
     @Override
     public double computeMetric(String codeSnippet) {
-        // Implement the CyclomaticComplexityFeature using the CyclomaticComplexityVisitor
-        throw new UnsupportedOperationException("Implement me");
+        BodyDeclaration<?> bodyDeclaration;
+        try {
+            bodyDeclaration = Parser.parseJavaSnippet(codeSnippet);
+        } catch (ParseException e) {
+            throw new RuntimeException(e);
+        }
+
+        CyclomaticComplexityVisitor complexityVisitor = new CyclomaticComplexityVisitor();
+        bodyDeclaration.accept(complexityVisitor, null);
+
+        return complexityVisitor.getComplexity();
     }
 
     @Override
