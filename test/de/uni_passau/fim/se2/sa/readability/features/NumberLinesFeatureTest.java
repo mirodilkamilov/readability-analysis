@@ -26,6 +26,24 @@ public class NumberLinesFeatureTest {
     }
 
     @Test
+    public void testComputeMetric_OneLine() {
+        String helloWorld = "public static void main(String[] args) { System.out.println(\"Hello, World!\"); }";
+        assertEquals(1.0, linesFeature.computeMetric(helloWorld));
+    }
+
+    @Test
+    public void testComputeMetric_TrailingNewlineOnlyLF() {
+        String snippet = "line1\nline2\n";
+        assertEquals(2.0, linesFeature.computeMetric(snippet));
+    }
+
+    @Test
+    public void testComputeMetric_TrailingNewlineOnlyCR() {
+        String snippet = "line1\rline2\r";
+        assertEquals(2.0, linesFeature.computeMetric(snippet));
+    }
+
+    @Test
     public void testComputeMetric_HelloWorld() {
         String helloWorld = """
                 public class HelloWorld {

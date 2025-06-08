@@ -21,13 +21,14 @@ public class PreprocessTest {
     private File truthFile;
     private StringBuilder csv = new StringBuilder();
     private List<FeatureMetric> featureMetrics;
+    private final int numOfSnippets = 10;
 
     @BeforeEach
     void setUp() throws IOException {
         tempDir = Files.createTempDirectory("preprocessTest");
 
         // Create .jsnp snippet files
-        for (int i = 0; i < 10; i++) {
+        for (int i = 0; i < numOfSnippets; i++) {
             Path snippet = tempDir.resolve(i + ".jsnp");
             Files.writeString(snippet, """
                     public void test() {
@@ -158,7 +159,7 @@ public class PreprocessTest {
 
         // Should still generate CSV with 10 rows, ignoring .txt file
         long lines = csv.toString().lines().count();
-        assertEquals(11, lines); // header + 10 snippets
+        assertEquals(numOfSnippets + 1, lines); // header + 10 snippets
     }
 
     @Test
@@ -167,6 +168,7 @@ public class PreprocessTest {
         String[] csvLines = csv.toString().split("\n");
         String csvHeader = csvLines[0];
         String[] csvDataLines = Arrays.copyOfRange(csvLines, 1, csvLines.length);
+        assertEquals(numOfSnippets + 1, csv.toString().lines().count());
 
         assertTrue(csvHeader.endsWith(",Truth"), "Last column should be Truth.");
         Arrays.stream(csvDataLines).forEach(
@@ -192,6 +194,7 @@ public class PreprocessTest {
             double mean = Double.parseDouble(truthMean);
             assertTrue(csvDataLines[i].endsWith(mean >= Preprocess.TRUTH_THRESHOLD ? "Y" : "N"));
             assertTrue(csvDataLines[i].startsWith(expectedSortedFilenames.get(i)));
+            assertEquals(csvHeader.split(",").length, csvDataLines[i].split(",").length);
         }
 
         assertEquals(expectedSortedFilenames, actualFilenames, "CSV entries must be sorted by filename.");

@@ -69,13 +69,11 @@ public class Preprocess {
         for (int i = 0; i < snippetFiles.length; i++) {
             File snippetFile = snippetFiles[i];
             String fileName = snippetFile.getName();
-            if (snippetFile.isFile() && fileName.endsWith(".jsnp")) {
-                String codeSnippet = Files.readString(Path.of(snippetFile.toURI()));
-                addCsvEntry(csv, fileName);
+            String codeSnippet = Files.readString(Path.of(snippetFile.toURI()));
+            addCsvEntry(csv, fileName);
 
-                for (FeatureMetric featureMetric : featureMetrics) {
-                    addCsvEntry(csv, featureMetric.computeMetric(codeSnippet));
-                }
+            for (FeatureMetric featureMetric : featureMetrics) {
+                addCsvEntry(csv, featureMetric.computeMetric(codeSnippet));
             }
 
             String truthLabel = Double.parseDouble(meanScores[i]) >= TRUTH_THRESHOLD ? "Y" : "N";
