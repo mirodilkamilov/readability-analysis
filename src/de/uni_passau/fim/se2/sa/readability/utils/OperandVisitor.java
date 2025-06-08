@@ -6,6 +6,7 @@ import com.github.javaparser.ast.body.Parameter;
 import com.github.javaparser.ast.body.VariableDeclarator;
 import com.github.javaparser.ast.expr.*;
 import com.github.javaparser.ast.type.ClassOrInterfaceType;
+import com.github.javaparser.ast.type.TypeParameter;
 import com.github.javaparser.ast.visitor.VoidVisitorAdapter;
 
 import java.util.HashMap;
@@ -98,7 +99,13 @@ public class OperandVisitor extends VoidVisitorAdapter<Void> {
         super.visit(n, arg);
     }
 
-    //MemberValuePair, ArrayCreationLevel, RecordDeclaration
+    @Override
+    public void visit(final TypeParameter n, final Void arg) {
+        addOperand(n.getNameAsString());
+        super.visit(n, arg);
+    }
+
+    //ArrayCreationLevel, RecordDeclaration
 
     @Override
     public void visit(final VariableDeclarator n, final Void arg) {
