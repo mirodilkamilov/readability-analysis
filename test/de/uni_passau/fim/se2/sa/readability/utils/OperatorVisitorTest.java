@@ -25,8 +25,8 @@ public class OperatorVisitorTest {
 
         Map<OperatorType, Integer> operators = visitor.getOperatorsPerMethod();
         assertEquals(1, visitor.getNumberOfUniqueOperators());
-        assertEquals(2, visitor.getTotalNumberOfOperators());
-        assertEquals(2, operators.get(OperatorType.ASSIGNMENT));
+        assertEquals(3, visitor.getTotalNumberOfOperators());
+        assertEquals(3, operators.get(OperatorType.ASSIGNMENT));
     }
 
     @Test
@@ -43,8 +43,8 @@ public class OperatorVisitorTest {
 
         Map<OperatorType, Integer> operators = visitor.getOperatorsPerMethod();
         assertEquals(1, visitor.getNumberOfUniqueOperators());
-        assertEquals(3, visitor.getTotalNumberOfOperators());
-        assertEquals(3, operators.get(OperatorType.ASSIGNMENT));
+        assertEquals(4, visitor.getTotalNumberOfOperators());
+        assertEquals(4, operators.get(OperatorType.ASSIGNMENT));
     }
 
     @Test
@@ -62,8 +62,8 @@ public class OperatorVisitorTest {
 
         Map<OperatorType, Integer> operators = visitor.getOperatorsPerMethod();
         assertEquals(3, visitor.getNumberOfUniqueOperators());
-        assertEquals(6, visitor.getTotalNumberOfOperators());
-        assertEquals(4, operators.get(OperatorType.ASSIGNMENT));
+        assertEquals(7, visitor.getTotalNumberOfOperators());
+        assertEquals(5, operators.get(OperatorType.ASSIGNMENT));
     }
 
     @Test
@@ -85,8 +85,8 @@ public class OperatorVisitorTest {
 
         Map<OperatorType, Integer> operators = visitor.getOperatorsPerMethod();
         assertEquals(3, visitor.getNumberOfUniqueOperators());
-        assertEquals(13, visitor.getTotalNumberOfOperators());
-        assertEquals(5, operators.get(OperatorType.ASSIGNMENT));
+        assertEquals(14, visitor.getTotalNumberOfOperators());
+        assertEquals(6, operators.get(OperatorType.ASSIGNMENT));
         assertEquals(7, operators.get(OperatorType.BINARY));
         assertEquals(1, operators.get(OperatorType.CONDITIONAL));
     }
