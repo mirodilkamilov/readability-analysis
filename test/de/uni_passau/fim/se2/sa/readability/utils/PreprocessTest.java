@@ -50,7 +50,7 @@ public class PreprocessTest {
                 Evaluator7,5,3,4,5,4,4,4,3,3,2
                 Evaluator8,4,3,2,3,3,5,3,1,4,3
                 Evaluator9,5,2,4,5,3,5,2,3,5,2
-                Mean,4.22,3.56,3.56,4.33,4,4.56,3,3.11,3.78,3.22
+                Mean,4.22,3.6,3.56,4.33,4,4.56,3,3.11,3.78,3.22
                 """;
         truthFile = File.createTempFile("truth", ".csv");
         Files.writeString(truthFile.toPath(), truthContent);
@@ -180,8 +180,41 @@ public class PreprocessTest {
             String truthMean = truthMeans[i];
             double mean = Double.parseDouble(truthMean);
             assertTrue(csvDataLines[i].endsWith(mean >= Preprocess.TRUTH_THRESHOLD ? "Y" : "N"));
+            assertTrue(csvDataLines[i].startsWith(expectedSortedFilenames.get(i)));
         }
 
         assertEquals(expectedSortedFilenames, actualFilenames, "CSV entries must be sorted by filename.");
+    }
+
+    @Test
+    public void testExtractLeadingNumber_ValidNumberFilename() {
+        assertEquals(123, Preprocess.extractLeadingNumber("123.jsnp"));
+        assertEquals(0, Preprocess.extractLeadingNumber("0.txt"));
+        assertEquals(42, Preprocess.extractLeadingNumber("42.json"));
+    }
+
+    @Test
+    public void testExtractLeadingNumber_NonNumericFilename() {
+        assertEquals(Integer.MAX_VALUE, Preprocess.extractLeadingNumber("abc.jsnp"));
+        assertEquals(Integer.MAX_VALUE, Preprocess.extractLeadingNumber("file.txt"));
+        assertEquals(Integer.MAX_VALUE, Preprocess.extractLeadingNumber("test123.jsnp"));
+    }
+
+    @Test
+    public void testExtractLeadingNumber_FilenameWithoutExtension() {
+        assertEquals(123, Preprocess.extractLeadingNumber("123"));
+        assertEquals(Integer.MAX_VALUE, Preprocess.extractLeadingNumber("file"));
+    }
+
+    @Test
+    public void testExtractLeadingNumber_EmptyOrNullFilename() {
+        assertEquals(Integer.MAX_VALUE, Preprocess.extractLeadingNumber(""));
+        assertEquals(Integer.MAX_VALUE, Preprocess.extractLeadingNumber(null));
+    }
+
+    @Test
+    public void testExtractLeadingNumber_NegativeAndLargeNumbers() {
+        assertEquals(-99, Preprocess.extractLeadingNumber("-99.txt"));
+        assertEquals(999999, Preprocess.extractLeadingNumber("999999.log"));
     }
 }
