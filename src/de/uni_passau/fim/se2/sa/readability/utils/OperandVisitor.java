@@ -69,7 +69,7 @@ public class OperandVisitor extends VoidVisitorAdapter<Void> {
 
     @Override
     public void visit(final StringLiteralExpr n, final Void arg) {
-        addOperand(n.getValue());
+        addOperand(replaceStringIfNull(n.getValue()));
         super.visit(n, arg);
     }
 
@@ -136,15 +136,16 @@ public class OperandVisitor extends VoidVisitorAdapter<Void> {
             super.visit(n, arg);
             return;
         }
-
-        String nodeName = n.getNameAsString();
-        nodeName = nodeName.equalsIgnoreCase("null") ? "null" : nodeName;
-        addOperand(nodeName);
+        addOperand(replaceStringIfNull(n.getNameAsString()));
 
         super.visit(n, arg);
     }
 
     private void addOperand(String operandName) {
         operandsPerMethod.merge(operandName, 1, Integer::sum);
+    }
+
+    private String replaceStringIfNull(String string) {
+        return string.equalsIgnoreCase("null") ? "null" : string;
     }
 }
