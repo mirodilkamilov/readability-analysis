@@ -17,6 +17,10 @@ public class HalsteadVolumeFeature extends FeatureMetric {
      */
     @Override
     public double computeMetric(String codeSnippet) {
+        if (codeSnippet == null || codeSnippet.isBlank()) {
+            return 0.0;
+        }
+
         BodyDeclaration<?> bodyDeclaration;
         try {
             bodyDeclaration = Parser.parseJavaSnippet(codeSnippet);

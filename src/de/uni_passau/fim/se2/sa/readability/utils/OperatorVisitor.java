@@ -43,13 +43,17 @@ public class OperatorVisitor extends VoidVisitorAdapter<Void> {
 
     @Override
     public void visit(final FieldDeclaration n, final Void arg) {
-        addOperator(OperatorType.ASSIGNMENT);
+        if (n.getTokenRange().isPresent() && n.getTokenRange().get().toString().contains("=")) {
+            addOperator(OperatorType.ASSIGNMENT);
+        }
         super.visit(n, arg);
     }
 
     @Override
     public void visit(final VariableDeclarationExpr n, final Void arg) {
-        addOperator(OperatorType.ASSIGNMENT);
+        if (n.getTokenRange().isPresent() && n.getTokenRange().get().toString().contains("=")) {
+            addOperator(OperatorType.ASSIGNMENT);
+        }
         super.visit(n, arg);
     }
 
