@@ -110,4 +110,62 @@ public class CyclomaticComplexityVisitorTest {
         bd.accept(visitor, null);
         assertEquals(2.0, visitor.getComplexity());
     }
+
+    @Test
+    public void testVisit_EverythingMixed() throws ParseException {
+        BodyDeclaration<?> bd = Parser.parseJavaSnippet("""
+                public void testMethod(){
+                    int a = 10;
+                    int b = 20;
+                
+                    if (a < b) {
+                        System.out.println("a is less than b");
+                    }
+                
+                    for (int i = 0; i < 5; i++) {
+                        System.out.println("For loop i = " + i);
+                    }
+                
+                    int i = 0;
+                    while (i < 3) {
+                        System.out.println("While loop i = " + i);
+                        i++;
+                    }
+                
+                    int j = 0;
+                    do {
+                        System.out.println("Do-while loop j = " + j);
+                        j++;
+                    } while (j < 2);
+                
+                    int day = 2;
+                    switch (day) {
+                        case 1:
+                            System.out.println("Monday");
+                            break;
+                        case 2:
+                            System.out.println("Tuesday");
+                            break;
+                        default:
+                            System.out.println("Another day");
+                    }
+                
+                    try {
+                        int result = 10 / 0;
+                    } catch (ArithmeticException e) {
+                        System.out.println("Caught an exception: " + e.getMessage());
+                    }
+                
+                    List<String> names = Arrays.asList("Alice", "Bob", "Charlie");
+                    for (String name : names) {
+                        System.out.println("Hello " + name);
+                    }
+                
+                    String message = (a > b) ? "a is greater" : (a == b ? "a equals b" : "b is greater");
+                    System.out.println("Ternary result: " + message);
+                }
+                """);
+        bd.accept(visitor, null);
+        assertEquals(11.0, visitor.getComplexity());
+    }
 }

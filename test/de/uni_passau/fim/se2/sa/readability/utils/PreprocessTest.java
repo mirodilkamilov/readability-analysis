@@ -151,6 +151,17 @@ public class PreprocessTest {
     }
 
     @Test
+    void testCollectCSVBody_SkipsNonJsnpFiles() throws IOException {
+        Path nonJsnpFile = tempDir.resolve("note.txt");
+        Files.writeString(nonJsnpFile, "this should be ignored");
+        Preprocess.collectCSVBody(tempDir, truthFile, csv, featureMetrics);
+
+        // Should still generate CSV with 10 rows, ignoring .txt file
+        long lines = csv.toString().lines().count();
+        assertEquals(11, lines); // header + 10 snippets
+    }
+
+    @Test
     void testCollectCSVBody_CorrectCSVStructure() throws IOException {
         Preprocess.collectCSVBody(tempDir, truthFile, csv, featureMetrics);
         String[] csvLines = csv.toString().split("\n");

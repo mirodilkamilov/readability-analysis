@@ -150,15 +150,15 @@ public class OperandVisitorTest {
     @Test
     public void testVisit_LocalClassDeclarationStmt() throws ParseException {
         BodyDeclaration<?> bd = Parser.parseJavaSnippet("""
-                public class X {
-                    void m() { }
-                    class Y { }
+                @Test public void testHHH1780() throws Exception {
+                    // verifies the tree contains a NOT->EXISTS subtree
+                    class Verifier { }
                 }
                 """);
         bd.accept(visitor, null);
 
-        assertEquals(1, visitor.getNumberOfUniqueOperands());
-        assertEquals(1, visitor.getTotalNumberOfOperands());
+        assertEquals(3, visitor.getNumberOfUniqueOperands());
+        assertEquals(3, visitor.getTotalNumberOfOperands());
     }
 
     @Test
@@ -281,5 +281,72 @@ public class OperandVisitorTest {
 
         assertEquals(19, visitor.getNumberOfUniqueOperands());
         assertEquals(33, visitor.getTotalNumberOfOperands());
+    }
+
+    @Test
+    public void testVisit_EverythingMixed() throws ParseException {
+        BodyDeclaration<?> bd = Parser.parseJavaSnippet("""
+                public <T> void testMethod(T type){
+                    int a = 10;
+                    int b = 20;
+                    boolean isValid = true;
+                    char label = 'Y';
+                    List<T> list = new ArrayList<>();
+                
+                    if (a < b && isValid == false) {
+                        System.out.println("a is less than b");
+                        System.out.println(1000);
+                        System.out.println(3.1415);
+                        System.out.println(31415L);
+                    }
+                
+                    for (int i = 0; i < 5; i++) {
+                        System.out.println("For loop i = " + i);
+                    }
+                
+                    int i = 0;
+                    while (i < 3) {
+                        System.out.println("While loop i = " + i);
+                        i++;
+                    }
+                
+                    int j = 0;
+                    do {
+                        System.out.println("Do-while loop j = " + j);
+                        j++;
+                        break;
+                    } while (j < 2);
+                
+                    int day = 2;
+                    switch (day) {
+                        case 1:
+                            System.out.println("Monday");
+                            break;
+                        case 2:
+                            System.out.println("Tuesday");
+                            break;
+                        default:
+                            System.out.println("Another day");
+                    }
+                
+                    try {
+                        int result = 10 / 0;
+                    } catch (ArithmeticException e) {
+                        System.out.println("Caught an exception: " + e.getMessage());
+                    }
+                
+                    List<String> names = Arrays.asList("Alice", "Bob", "Charlie");
+                    for (String name : names) {
+                        System.out.println("Hello " + name);
+                    }
+                
+                    String message = (a > b) ? "a is greater" : (a == b ? "a equals b" : "b is greater");
+                    System.out.println("Ternary result: " + message);
+                }
+                """);
+        bd.accept(visitor, null);
+
+        assertEquals(55, visitor.getNumberOfUniqueOperands());
+        assertEquals(124, visitor.getTotalNumberOfOperands());
     }
 }
