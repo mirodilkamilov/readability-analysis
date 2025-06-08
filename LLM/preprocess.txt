@@ -1,0 +1,106 @@
+Q: how to go through a files in directory alphabetically in java
+
+A: To go through files in a directory **alphabetically** in Java, you can use the `File` class along with `listFiles()` and a custom sort using `Arrays.sort()`. Here's a complete example:
+
+   ```java
+   import java.io.File;
+   import java.util.Arrays;
+
+   public class AlphabeticalFileReader {
+       public static void main(String[] args) {
+           // Specify the directory
+           File directory = new File("path/to/your/directory");
+
+           // Check if the directory exists and is actually a directory
+           if (directory.exists() && directory.isDirectory()) {
+               // Get all files (and subdirectories) in the directory
+               File[] files = directory.listFiles();
+
+               if (files != null) {
+                   // Sort files alphabetically by name
+                   Arrays.sort(files, (f1, f2) -> f1.getName().compareToIgnoreCase(f2.getName()));
+
+                   // Iterate and print file names
+                   for (File file : files) {
+                       if (file.isFile()) { // You can skip this check if you want directories too
+                           System.out.println(file.getName());
+                       }
+                   }
+               } else {
+                   System.out.println("Failed to list files in the directory.");
+               }
+           } else {
+               System.out.println("Directory does not exist or is not a directory.");
+           }
+       }
+   }
+   ```
+
+   ### Notes:
+
+   * `compareToIgnoreCase` is used for case-insensitive sorting.
+   * If you want to include directories in the output, remove the `file.isFile()` check.
+   * For recursive listing (through subdirectories), you'll need to use recursion or a stack/queue.
+
+   Let me know if you want a version that also goes through subdirectories.
+
+
+Q: I want to have complex sorting alogorithm. My files are called 1.jsnp, 2.jsnp, ...
+
+   I might convert them to integer and then sort. Because as a String, it will sort like: 1.jsnp, 10.jsnp, 100.jsnp, ...
+
+A: You're absolutely right — when sorting filenames like `"1.jsnp", "10.jsnp", "100.jsnp", "2.jsnp"` **as strings**, you’ll get lexicographical order, which is incorrect for numeric ordering.
+
+   To implement a **custom numeric sort**, you can extract the numeric prefix from each filename, convert it to an integer, and then sort based on that. Here's how to do it:
+
+   ```java
+   import java.io.File;
+   import java.util.Arrays;
+
+   public class NumericFileSorter {
+       public static void main(String[] args) {
+           File directory = new File("path/to/your/directory");
+
+           if (directory.exists() && directory.isDirectory()) {
+               File[] files = directory.listFiles();
+
+               if (files != null) {
+                   Arrays.sort(files, (f1, f2) -> {
+                       int num1 = extractLeadingNumber(f1.getName());
+                       int num2 = extractLeadingNumber(f2.getName());
+                       return Integer.compare(num1, num2);
+                   });
+
+                   for (File file : files) {
+                       if (file.isFile()) {
+                           System.out.println(file.getName());
+                       }
+                   }
+               }
+           }
+       }
+
+       // Extracts the leading number from the filename (e.g., "123.jsnp" -> 123)
+       private static int extractLeadingNumber(String filename) {
+           try {
+               String numberPart = filename.split("\\.")[0]; // assumes format like "123.jsnp"
+               return Integer.parseInt(numberPart);
+           } catch (Exception e) {
+               return Integer.MAX_VALUE; // push non-numeric files to the end
+           }
+       }
+   }
+   ```
+
+   ### Explanation:
+
+   * We assume filenames are like `"1.jsnp"`, `"2.jsnp"`, ..., `"100.jsnp"`.
+   * `extractLeadingNumber()` grabs the part before `.jsnp` and parses it to `int`.
+   * Files that don’t match the pattern will be pushed to the end using `Integer.MAX_VALUE`.
+
+   Let me know if:
+
+   * You want to handle subdirectories too,
+   * Filenames have more complex formats (e.g., `"test_1.jsnp"`, `"item-02.jsnp"`), or
+   * You want to sort in descending order.
+
