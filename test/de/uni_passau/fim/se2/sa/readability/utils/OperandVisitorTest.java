@@ -148,6 +148,64 @@ public class OperandVisitorTest {
     }
 
     @Test
+    public void testVisit_LocalClassDeclarationStmt() throws ParseException {
+        BodyDeclaration<?> bd = Parser.parseJavaSnippet("""
+                public class X {
+                    void m() { }
+                    class Y { }
+                }
+                """);
+        bd.accept(visitor, null);
+
+        assertEquals(1, visitor.getNumberOfUniqueOperands());
+        assertEquals(1, visitor.getTotalNumberOfOperands());
+    }
+
+    @Test
+    public void testVisit_VariableDeclarator() throws ParseException {
+        BodyDeclaration<?> bd = Parser.parseJavaSnippet("""
+                public void printMessage(){
+                    String message = "sdsds";
+                    int x = 14, y = 3;
+                }
+                """);
+        bd.accept(visitor, null);
+
+        assertEquals(8, visitor.getNumberOfUniqueOperands());
+        assertEquals(8, visitor.getTotalNumberOfOperands());
+    }
+
+    @Test
+    public void testVisit_MethodCallExpr() throws ParseException {
+        BodyDeclaration<?> bd = Parser.parseJavaSnippet("""
+                public void printMessage(){
+                    for (int i = 0; i < files.length; i++) {
+                          File file = files[i];
+                          String fileName = file.getName();
+                          if (file.isFile() && fileName.endsWith(".jsnp")) {
+                              String codeSnippet = Files.readString(Path.of(file.toURI()));
+                              addCsvEntry(csv, fileName);
+                
+                              for (FeatureMetric featureMetric : featureMetrics) {
+                                  addCsvEntry(csv, featureMetric.computeMetric(codeSnippet));
+                              }
+                          }
+                
+                          String truthLabel = Double.parseDouble(meanScores[i]) >= TRUTH_THRESHOLD ? "Y" : "N";
+                          csv.append(truthLabel);
+                          if (i != files.length - 1) {
+                              csv.append("\\n");
+                          }
+                      }
+                }
+                """);
+        bd.accept(visitor, null);
+
+        assertEquals(35, visitor.getNumberOfUniqueOperands());
+        assertEquals(58, visitor.getTotalNumberOfOperands());
+    }
+
+    @Test
     public void testVisit_BreakStmt() throws ParseException {
         BodyDeclaration<?> bd = Parser.parseJavaSnippet("""
                 public void helloWorld(int a){
