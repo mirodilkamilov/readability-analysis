@@ -14,7 +14,7 @@ public class Preprocess {
     /**
      * A value of 3.6 splits the Scalabrino Dataset into almost evenly balanced binary classes.
      */
-    private static final double TRUTH_THRESHOLD = 3.6;
+    public static final double TRUTH_THRESHOLD = 3.6;
 
     /**
      * Traverses through each java snippet in the specified source directory and computes the specified list of feature metrics.

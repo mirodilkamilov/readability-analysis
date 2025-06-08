@@ -83,6 +83,16 @@ public class PreprocessTest {
     }
 
     @Test
+    void testCollectCSVBody_SourceIsNotDirectory() throws IOException {
+        Path sourceDir = File.createTempFile("truth", ".txt").toPath();
+        IOException e = assertThrows(
+                IOException.class,
+                () -> Preprocess.collectCSVBody(sourceDir, truthFile, csv, featureMetrics)
+        );
+        assertEquals("Source directory does not exist or is not a directory.", e.getMessage());
+    }
+
+    @Test
     void testCollectCSVBody_EmptySourceDirectory() throws IOException {
         Path sourceDir = Files.createTempDirectory("emptyDir");
         IOException e = assertThrows(
@@ -159,6 +169,18 @@ public class PreprocessTest {
         // Compare with sorted list of filenames
         List<String> expectedSortedFilenames = new ArrayList<>(actualFilenames);
         expectedSortedFilenames.sort(Comparator.comparingInt(Preprocess::extractLeadingNumber));
+
+        String[] truthLines = Files.readString(truthFile.toPath()).split("\n");
+        String truthMeanLine = truthLines[truthLines.length - 1];
+        assertTrue(truthMeanLine.startsWith("Mean,"), "Invalid truth file: Mean values are missing.");
+
+        String[] truthMeans = truthMeanLine.replaceFirst("Mean,", "").split(",");
+        assertEquals(truthMeans.length, csvDataLines.length);
+        for (int i = 0; i < truthMeans.length; i++) {
+            String truthMean = truthMeans[i];
+            double mean = Double.parseDouble(truthMean);
+            assertTrue(csvDataLines[i].endsWith(mean >= Preprocess.TRUTH_THRESHOLD ? "Y" : "N"));
+        }
 
         assertEquals(expectedSortedFilenames, actualFilenames, "CSV entries must be sorted by filename.");
     }
