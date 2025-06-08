@@ -5,6 +5,7 @@ import com.github.javaparser.ast.body.MethodDeclaration;
 import com.github.javaparser.ast.body.Parameter;
 import com.github.javaparser.ast.body.VariableDeclarator;
 import com.github.javaparser.ast.expr.*;
+import com.github.javaparser.ast.stmt.BreakStmt;
 import com.github.javaparser.ast.stmt.LocalClassDeclarationStmt;
 import com.github.javaparser.ast.type.ClassOrInterfaceType;
 import com.github.javaparser.ast.type.TypeParameter;
@@ -109,6 +110,13 @@ public class OperandVisitor extends VoidVisitorAdapter<Void> {
     @Override
     public void visit(final LocalClassDeclarationStmt n, final Void arg) {
         addOperand(n.getClassDeclaration().getNameAsString());
+        super.visit(n, arg);
+    }
+
+    @Override
+    public void visit(final BreakStmt n, final Void arg) {
+        addOperand(n.getLabel().get().getIdentifier());
+        addOperand(n.getLabel().get().getIdentifier());
         super.visit(n, arg);
     }
 
