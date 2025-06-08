@@ -153,6 +153,19 @@ public class CyclomaticComplexityFeatureTest {
     }
 
     @Test
+    public void testComputeMetric_ForEachStmt() {
+        String helloWorld = """
+                public void testMethod() {
+                    for (int i : numbers) {
+                        System.out.println(i);
+                    }
+                }
+                """;
+        String result = String.format("%.1f", cyFeature.computeMetric(helloWorld));
+        assertEquals("2.0", result);
+    }
+
+    @Test
     public void testComputeMetric_SimpleCode() {
         String helloWorld = """
                 public void testMethod(){

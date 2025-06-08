@@ -60,7 +60,7 @@ public class CyclomaticComplexityVisitorTest {
     }
 
     @Test
-    public void testComputeMetric_Loops() throws ParseException {
+    public void testVisit_Loops() throws ParseException {
         BodyDeclaration<?> bd = Parser.parseJavaSnippet("""
                 public void testMethod(){
                      for (int i = 0; i < 10; i++) { }
@@ -70,5 +70,44 @@ public class CyclomaticComplexityVisitorTest {
                 """);
         bd.accept(visitor, null);
         assertEquals(4.0, visitor.getComplexity());
+    }
+
+    @Test
+    public void testVisit_CatchClause() throws ParseException {
+        BodyDeclaration<?> bd = Parser.parseJavaSnippet("""
+                public void testMethod() {
+                    try {
+                        int x = 1 / 0;
+                    } catch (ArithmeticException e) {
+                        System.out.println("Error");
+                    }
+                }
+                """);
+        bd.accept(visitor, null);
+        assertEquals(2.0, visitor.getComplexity());
+    }
+
+    @Test
+    public void testVisit_ForEachStmt() throws ParseException {
+        BodyDeclaration<?> bd = Parser.parseJavaSnippet("""
+                public void testMethod() {
+                    for (int i : numbers) {
+                        System.out.println(i);
+                    }
+                }
+                """);
+        bd.accept(visitor, null);
+        assertEquals(2.0, visitor.getComplexity());
+    }
+
+    @Test
+    public void testVisit_ConditionalExpr() throws ParseException {
+        BodyDeclaration<?> bd = Parser.parseJavaSnippet("""
+                public void testMethod() {
+                    int result = (a > b) ? a : b;
+                }
+                """);
+        bd.accept(visitor, null);
+        assertEquals(2.0, visitor.getComplexity());
     }
 }
