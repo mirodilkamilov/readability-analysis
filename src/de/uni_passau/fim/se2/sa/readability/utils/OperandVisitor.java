@@ -92,6 +92,12 @@ public class OperandVisitor extends VoidVisitorAdapter<Void> {
         super.visit(n, arg);
     }
 
+    @Override
+    public void visit(final MemberValuePair n, final Void arg) {
+        addOperand(n.getNameAsString());
+        super.visit(n, arg);
+    }
+
     //MemberValuePair, ArrayCreationLevel, RecordDeclaration
 
     @Override
