@@ -115,8 +115,10 @@ public class OperandVisitor extends VoidVisitorAdapter<Void> {
 
     @Override
     public void visit(final BreakStmt n, final Void arg) {
-        addOperand(n.getLabel().get().getIdentifier());
-        addOperand(n.getLabel().get().getIdentifier());
+        if (n.getLabel().isPresent()) {
+            addOperand(n.getLabel().get().getIdentifier());
+            addOperand(n.getLabel().get().getIdentifier());
+        }
         super.visit(n, arg);
     }
 
