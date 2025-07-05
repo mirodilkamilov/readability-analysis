@@ -119,7 +119,9 @@
                 <artifactId>pitest-maven</artifactId>
                 <version>${pit.version}</version>
                 <configuration>
-                    <outputFormats>XML</outputFormats>
+                    <outputFormats>
+                        <format>HTML</format>
+                    </outputFormats>
                     <targetClasses>
                         <param>de.uni_passau.fim.se2.sa.readability.features.NumberLinesFeature</param>
                         <param>de.uni_passau.fim.se2.sa.readability.features.TokenEntropyFeature</param>
